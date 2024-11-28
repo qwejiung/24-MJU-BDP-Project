@@ -6,6 +6,16 @@
 
 ## 회의 내용
 
+### 각 대학의 경도, 위도 정보 수집 방법 변경
+
+**기존:** Find Latitude Longitude. [링크](https://www.findlatlng.org/#google_vignette)
+
+**변경:** Google Maps API
+
+**변경 사유:** 오류 발생 사례가 있어 수집 방법을 변경
+
+<br>
+
 ### 역할 재분배
 
 |담당자|재분배 전|재분배 후|
