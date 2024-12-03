@@ -1,11 +1,24 @@
 # Preprocessing 실행 방법
 
-- mkdir BDP (디렉토리 생성)
-- 소상공인시장진흥공단_상가(상권)정보_서울_202409.csv 를 restaurant.csv로 변경 후 FileZilla를 이용하여 생성한 디렉토리(BDP)에 저장
+- maria_dev 접속 후
+    - BDP 디렉토리 생성, 접속
+    
+    ```jsx
+    mkdir BDP
+    cd BDP
+    ```
+    
+
+- 소상공인시장진흥공단_상가(상권)정보_서울_202409.csv를 restaurant.csv로 이름 변경
+- restaurant.csv 데이터의 용량이 커 Ambari에 직접 업로드 불가
+
+- FileZilla 사용
+    - BDP 디렉토리에 university_locations.csv 와 restaurant.csv 업로드
 
 ---
 
 - hdfs에 csv파일 저장
+    - BDP 디렉토리에서 코드 입력해야 함
 
 ```jsx
 hdfs dfs -put university_locations.csv /user/maria_dev/
@@ -27,9 +40,13 @@ export LC_ALL=en_US.UTF-8
 
 ---
 
-## pyspark에 접속
+- pyspark에 접속
 
-### university_locations preprocessing
+```jsx
+pyspark
+```
+
+### university_locations.csv 전처리
 
 - 차례대로 코드 입력
 
@@ -78,7 +95,7 @@ university_df.show(n=50)
 
 ---
 
-## 소상공인시장진흥공단_상가(상권)정보_서울_202409.csv preprocessing
+## 소상공인시장진흥공단_상가(상권)정보_서울_202409.csv 전처리
 
 ```jsx
 restaurant_df = spark.read.csv('hdfs:///user/maria_dev/restaurant.csv', header=True, inferSchema=True)
