@@ -82,8 +82,8 @@ university_df.show(n=50)
 ```jsx
 additional_data = [
     (u'경희대학교', 407376, 37.59685, 127.051800),
-    (u'가톨릭대학교 제2캠퍼스', 86799, 37.500162, 127.005323),  # Unicode 문자열 사용
-    (u'가톨릭대학교 제3캠퍼스', 85004, 37.585750, 127.004794)
+    (u'가톨릭대학교 _제2캠퍼스', 86799, 37.500162, 127.005323),  # Unicode 문자열 사용
+    (u'가톨릭대학교 _제3캠퍼스', 85004, 37.585750, 127.004794)
 ]
 additional_df = spark.createDataFrame(additional_data)
 additional_df.show()
