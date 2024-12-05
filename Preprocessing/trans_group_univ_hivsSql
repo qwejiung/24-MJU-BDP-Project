@@ -35,34 +35,34 @@ SELECT
 FROM temp_restaurants;
 
 
-drop table temp_location;
-CREATE TABLE temp_location (col_value STRING) STORED AS TEXTFILE;
+drop table temp_univ;
+CREATE TABLE temp_univ (col_value STRING) STORED AS TEXTFILE;
 
-drop table univ_location;
-CREATE TABLE IF NOT EXISTS univ_location (
+drop table univ_info;
+CREATE TABLE IF NOT EXISTS univ_info (
     univ_name STRING,
-    square BIGINT,
-    latitude DOUBLE,    
-    longitude DOUBLE
+    distance BIGINT,
+    num BIGINT,    
+    density DOUBLE
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
 TBLPROPERTIES ("skip.header.line.count"="1");
 
-LOAD DATA INPATH '/user/maria_dev/teamproject/trans_univ_location.csv' OVERWRITE INTO TABLE temp_location;
+LOAD DATA INPATH '/user/maria_dev/teamproject/university_info.csv' OVERWRITE INTO TABLE temp_univ;
 
-INSERT OVERWRITE TABLE univ_location
+INSERT OVERWRITE TABLE univ_info
 SELECT
     regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) AS univ_name,
-    regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) AS square,
-    regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) AS latitude,
-    regexp_extract(col_value, '^(?:([^,]*),?){4}', 1) AS longitude
-FROM temp_location;
+    regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) AS distance,
+    regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) AS num,
+    regexp_extract(col_value, '^(?:([^,]*),?){4}', 1) AS density
+FROM temp_univ;
 
 
 drop table grouped_univ;
 CREATE TABLE grouped_univ AS
-SELECT r.university,r.category_middle_name,r.category_small_name, count(*) as cnt, l.square
+SELECT r.university,r.category_middle_name,r.category_small_name, count(*) as cnt, u.density
 FROM restaurants r
-JOIN univ_location l ON r.university = l.univ_name
-GROUP BY r.university,r.category_middle_name,r.category_small_name, l.square
+JOIN univ_info u ON r.university = u.univ_name
+GROUP BY r.university,r.category_middle_name,r.category_small_name, u.density
 ORDER BY r.university, cnt DESC,r.category_middle_name, r.category_small_name;
