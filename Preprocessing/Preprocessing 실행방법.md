@@ -77,9 +77,15 @@ university_df = university_df.withColumn("대학명",
 university_df.show(n=50)
 ```
 
-- 경희대학교, 카톨릭대학교 컴퍼스 직접 데이터 추가 후 면적을 기준으로 내림차순 정
+- 기존 가톨릭 대학교 삭제 후 경희대학교, 가톨릭대학교 컴퍼스 직접 데이터 추가 후 면적을 기준으로 내림차순 정렬
 
 ```jsx
+university_df = university_df.filter(university_df['대학명'] != '가톨릭대학교')
+university_df.show()
+```
+
+```jsx
+
 additional_data = [
     (u'경희대학교', 407376, 37.59685, 127.051800),
     (u'가톨릭대학교 _제2캠퍼스', 86799, 37.500162, 127.005323),  # Unicode 문자열 사용
