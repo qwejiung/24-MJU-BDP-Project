@@ -1,0 +1,68 @@
+drop table temp_restaurants;
+CREATE TABLE temp_restaurants (col_value STRING) STORED AS TEXTFILE;
+
+drop table restaurants;
+CREATE TABLE IF NOT EXISTS restaurants (
+    store_name STRING,
+    category_major_code STRING,
+    category_major_name STRING,
+    category_middle_code STRING,
+    category_middle_name STRING,
+    category_small_code STRING,
+    category_small_name STRING,
+    longitude DOUBLE,
+    latitude DOUBLE,
+    university STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+
+LOAD DATA INPATH '/user/maria_dev/teamproject/trans_split_univ.csv' OVERWRITE INTO TABLE temp_restaurants;
+
+INSERT OVERWRITE TABLE restaurants
+SELECT
+    regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) AS store_name,
+    regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) AS category_major_code,
+    regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) AS category_major_name,
+    regexp_extract(col_value, '^(?:([^,]*),?){4}', 1) AS category_middle_code,
+    regexp_extract(col_value, '^(?:([^,]*),?){5}', 1) AS category_middle_name,
+    regexp_extract(col_value, '^(?:([^,]*),?){6}', 1) AS category_small_code,
+    regexp_extract(col_value, '^(?:([^,]*),?){7}', 1) AS category_small_name,
+    regexp_extract(col_value, '^(?:([^,]*),?){8}', 1) AS longitude,
+    regexp_extract(col_value, '^(?:([^,]*),?){9}', 1) AS latitude,
+    regexp_extract(col_value, '^(?:([^,]*),?){10}', 1) AS university
+FROM temp_restaurants;
+
+
+drop table temp_univ;
+CREATE TABLE temp_univ (col_value STRING) STORED AS TEXTFILE;
+
+drop table univ_info;
+CREATE TABLE IF NOT EXISTS univ_info (
+    univ_name STRING,
+    distance BIGINT,
+    num BIGINT,    
+    density DOUBLE
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/maria_dev/teamproject/university_info.csv' OVERWRITE INTO TABLE temp_univ;
+
+INSERT OVERWRITE TABLE univ_info
+SELECT
+    regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) AS univ_name,
+    regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) AS distance,
+    regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) AS num,
+    regexp_extract(col_value, '^(?:([^,]*),?){4}', 1) AS density
+FROM temp_univ;
+
+
+drop table grouped_univ;
+CREATE TABLE grouped_univ AS
+SELECT r.university,r.category_middle_name,r.category_small_name, count(*) as cnt, u.density
+FROM restaurants r
+JOIN univ_info u ON r.university = u.univ_name
+GROUP BY r.university,r.category_middle_name,r.category_small_name, u.density
+ORDER BY r.university, cnt DESC,r.category_middle_name, r.category_small_name;
