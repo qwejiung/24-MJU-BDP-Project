@@ -51,23 +51,55 @@ pyspark
 - 차례대로 코드 입력
 
 ```jsx
-university_df = spark.read.csv('hdfs:///user/maria_dev/university_locations.csv',header=True,inferSchema=True)
+university_df = spark.read.csv('hdfs:///user/maria_dev/university_locations.csv',header=True,inferSchema=True, encoding='UTF-8')
 university_df.show(n=50)
 ```
-
-- 경희대학교 정보가 없어 직접 추가 시도
-    - 글자 깨짐 현상 발생하여 제외하고 진행
 
 - 면적과 대학명 정리
 
 ```jsx
 from pyspark.sql import functions as F
-university_df = university_df.withColumn("면적", F.regexp_replace(F.regexp_replace(F.regexp_replace(university_df["면적"], ",", ""), "㎡", ""), r"\[\d+\]", "")) \
-                  .withColumn("대학명", F.regexp_replace(F.col("대학명"), r"\[.*?\]", ""))         
+university_df = university_df.withColumn("면적", 
+    F.regexp_replace(
+        F.regexp_replace(
+            F.regexp_replace(
+                F.regexp_replace(university_df["면적"], ",", ""), 
+                "㎡", ""), 
+            r"\[.*?\]", ""), 
+        r"(\d+).*", "$1")
+)
+university_df = university_df.withColumn("대학명", 
+    F.regexp_replace(F.col("대학명"), r"\s*\[.*?\]\s*", "")
+)
 ```
 
 ```jsx
 university_df.show(n=50)
+```
+
+- 기존 가톨릭 대학교 삭제 후 경희대학교, 가톨릭대학교 컴퍼스 직접 데이터 추가 후 면적을 기준으로 내림차순 정렬
+
+```jsx
+university_df = university_df.filter(university_df['대학명'] != '가톨릭대학교')
+university_df.show()
+```
+
+```jsx
+
+additional_data = [
+    (u'경희대학교', 407376, 37.59685, 127.051800),
+    (u'가톨릭대학교 _제2캠퍼스', 86799, 37.500162, 127.005323),  # Unicode 문자열 사용
+    (u'가톨릭대학교 _제3캠퍼스', 85004, 37.585750, 127.004794)
+]
+additional_df = spark.createDataFrame(additional_data)
+additional_df.show()
+```
+
+```jsx
+university_df = university_df.union(additional_df)
+university_df = university_df.withColumn("면적", university_df["면적"].cast("integer"))
+university_df = university_df.orderBy(F.desc("면적"))
+university_df.show(n=100)
 ```
 
 - 반경 column 추가
